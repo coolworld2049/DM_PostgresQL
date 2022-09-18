@@ -43,8 +43,12 @@ CREATE TABLE IF NOT EXISTS company.contract (
     details jsonb
 );
 
-CREATE TABLE IF NOT EXISTS company.current_client() INHERITS(company.clients);
+CREATE TABLE IF NOT EXISTS company.current_client(
+    passport bigserial references company.clients(passport) NOT NULL
+) INHERITS(company.clients);
 
-CREATE TABLE IF NOT EXISTS company.potential_client () INHERITS(company.clients);
+CREATE TABLE IF NOT EXISTS company.potential_client (
+    passport bigserial references company.clients(passport) NOT NULL
+) INHERITS(company.clients);
 
 
