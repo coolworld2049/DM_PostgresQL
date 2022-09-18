@@ -19,10 +19,14 @@ BEGIN
         CREATE USER Alex WITH LOGIN ROLE ranker IN GROUP staff;
     END IF;
 END$$;
+--Админ имеет доступ к специальным функциям, например, может изменить автора задания или внести изменения в завершенное задание.
+GRANT ALL PRIVILEGES ON SCHEMA company to admin;
 
-GRANT ALL PRIVILEGES ON SCHEMA company to admin; --Админ имеет доступ к специальным функциям, например, может изменить автора задания или внести изменения в завершенное задание.
-GRANT SELECT, INSERT, UPDATE ON TABLE company.task to manager; --Менеджеры назначают задания себе или кому-либо из рядовых сотрудников
-GRANT SELECT ON TABLE company.task to ranker; --Рядовые сотрудники не могут назначать задания
+--Менеджеры назначают задания себе или кому-либо из рядовых сотрудников
+GRANT SELECT, INSERT, UPDATE ON TABLE company.task to manager;
+
+ --Рядовые сотрудники не могут назначать задания
+GRANT SELECT ON TABLE company.task to ranker;
 
 --Менеджеры назначают задания себе или кому-либо из рядовых сотрудников
 --Исполнителем задания может быть сотрудник, не являющийся автором: is_not_author(input_task_id)
