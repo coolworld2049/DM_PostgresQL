@@ -3,7 +3,7 @@ VALUES (4565465468789, 'GroupIB', 'Информационная безопасн
        (1232487855544, 'Kaspersky', 'Информационная безопасность', 'г.Москва, ленинградское щоссе 1'),
        (4565712855898, 'Yandex', 'Разработка ИС', 'г.Москва, лубянка 20');
 
-INSERT INTO company.organization_officials
+INSERT INTO company.clients
 VALUES (1234567899, '+7456789451', 4565465468789, 'Иван Иванович', 'qwe@gmail.com'),
        (9874561233, '+7445289452', 4565465468789, 'Сергей Петрович', 'ert@gmail.com'),
        (4567891322, '+7456799453', 4565465468789, 'Алексей Николаевич', 'yui@gmail.com'),
@@ -30,7 +30,17 @@ VALUES (6666666666, 'postgres', 'manager'::employee_role, '+7456789451', 'postgr
 
 INSERT INTO company.task
 VALUES (0, 1234567899, 3333333333, 1111111111, '2022-09-02 04:05:06'::timestamp, '2022-09-18 04:05:06'::timestamp, null, 'low'::priority, 'телефонный звонок'),
-       (1, 9874561233, 4444444444, 2222222222, '2022-09-18 04:05:06'::timestamp, '2022-09-25 04:05:06'::timestamp, null, 'high'::priority, 'визит');
+       (1, 9874561233, 4444444444, 2222222222, '2022-09-08 04:05:06'::timestamp, '2022-09-25 04:05:06'::timestamp, null, 'high'::priority, 'визит');
 
-INSERT INTO company.potential_client ((SELECT task_id FROM company.task WHERE deadline_date > LOCALTIMESTAMP or deadline_date is null )) ON CONFLICT DO NOTHING;
-INSERT INTO company.potential_client ((SELECT task_id FROM company.task WHERE deadline_date < LOCALTIMESTAMP or completion_date < LOCALTIMESTAMP)) ON CONFLICT DO NOTHING;
+INSERT INTO company.current_client (SELECT * FROM company.clients as ccl
+                                                        WHERE (SELECT ct.customer_passport FROM company.task as ct
+                                                                        WHERE customer_passport = ccl.passport and
+                                                                              deadline_date > LOCALTIMESTAMP or deadline_date is null) = ccl.passport)
+ON CONFLICT DO NOTHING;
+
+INSERT INTO company.potential_client (SELECT * FROM company.clients as ccl
+                                                        WHERE (SELECT ct.customer_passport FROM company.task as ct
+                                                                        WHERE customer_passport = ccl.passport and
+                                                                              deadline_date < LOCALTIMESTAMP or completion_date < LOCALTIMESTAMP) = ccl.passport)
+ON CONFLICT DO NOTHING;
+
