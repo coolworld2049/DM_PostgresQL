@@ -1,4 +1,15 @@
 CREATE SCHEMA IF NOT EXISTS company;
+SET SCHEMA 'company';
+
+DO $$
+BEGIN
+    IF NOT EXISTS (SELECT 1 FROM pg_type WHERE typname = 'employee_role') THEN
+        CREATE TYPE company.employee_role as ENUM ('manager', 'ranker');
+    END IF;
+    IF NOT EXISTS (SELECT 1 FROM pg_type WHERE typname = 'priority') THEN
+        CREATE TYPE company.priority as ENUM ('low', 'medium', 'high');
+    END IF;
+END$$;
 
 CREATE TABLE IF NOT EXISTS company.organization(
     ogrnip bigserial primary key UNIQUE NOT NULL,

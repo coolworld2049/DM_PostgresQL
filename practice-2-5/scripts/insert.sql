@@ -1,3 +1,5 @@
+SET SCHEMA 'company';
+
 INSERT INTO company.organization
 VALUES (4565465468789, 'GroupIB', 'Информационная безопасность', 'г.Москва, чистые пруды 1'),
        (1232487855544, 'Kaspersky', 'ИнфоБез', 'г.Москва, ленинградское щоссе 1'),

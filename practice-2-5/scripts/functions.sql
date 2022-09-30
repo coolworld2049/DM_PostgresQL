@@ -1,3 +1,5 @@
+SET SCHEMA 'company';
+
 CREATE OR REPLACE FUNCTION get_passport_byCurrentUser() RETURNS bigint AS
 $BODY$
 BEGIN

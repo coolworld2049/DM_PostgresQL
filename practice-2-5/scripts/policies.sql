@@ -1,32 +1,22 @@
-DO $$
-BEGIN
-    IF NOT EXISTS (SELECT 1 FROM pg_roles WHERE rolname = 'manager') THEN
-        CREATE ROLE manager NOLOGIN NOSUPERUSER;
-    END IF;
-    IF NOT EXISTS (SELECT 1 FROM pg_roles WHERE rolname = 'ranker') THEN
-        CREATE ROLE ranker NOLOGIN NOSUPERUSER;
-    END IF;
-END$$;
+SET SCHEMA 'company';
 
-DO $$
-BEGIN
-    IF NOT EXISTS (SELECT 1 FROM pg_group WHERE groname = 'staff') THEN
-        CREATE GROUP staff;
-        CREATE USER Bob WITH LOGIN ROLE manager IN GROUP staff;
-        CREATE USER Tom WITH LOGIN ROLE manager IN GROUP staff;
-        CREATE USER Alice WITH LOGIN ROLE manager IN GROUP staff;
-        CREATE USER Jack WITH LOGIN ROLE ranker IN GROUP staff;
-        CREATE USER Alex WITH LOGIN ROLE ranker IN GROUP staff;
-    END IF;
-END$$;
 --Админ имеет доступ к специальным функциям, например, может изменить автора задания или внести изменения в завершенное задание.
-GRANT ALL PRIVILEGES ON SCHEMA company to admin;
+ALTER ROLE admin SUPERUSER LOGIN PASSWORD '12345' VALID UNTIL 'infinity';
+ALTER DATABASE client_management OWNER TO admin;
+ALTER SCHEMA company OWNER TO admin;
+
+CREATE ROLE manager LOGIN PASSWORD '12345' VALID UNTIL 'infinity';
+CREATE ROLE ranker LOGIN PASSWORD '12345' VALID UNTIL 'infinity';
+
+GRANT ALL PRIVILEGES ON ALL TABLES IN SCHEMA company to admin;
 
 --Менеджеры назначают задания себе или кому-либо из рядовых сотрудников
-GRANT SELECT, INSERT, UPDATE ON TABLE company.task to manager;
+GRANT USAGE ON SCHEMA company to manager;
+GRANT SELECT, INSERT, UPDATE ON company.task to manager;
 
  --Рядовые сотрудники не могут назначать задания
-GRANT SELECT ON TABLE company.task to ranker;
+GRANT USAGE ON SCHEMA company to ranker;
+GRANT SELECT, UPDATE ON TABLE company.task to ranker;
 
 --Менеджеры назначают задания себе или кому-либо из рядовых сотрудников
 --Исполнителем задания может быть сотрудник, не являющийся автором: is_not_author(input_task_id)
