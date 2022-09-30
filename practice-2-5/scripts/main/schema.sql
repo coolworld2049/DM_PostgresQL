@@ -1,4 +1,10 @@
+SET ROLE admin;
 CREATE SCHEMA IF NOT EXISTS company;
+
+--Админ имеет доступ к специальным функциям, например, может изменить
+-- автора задания или внести изменения в завершенное задание.
+GRANT ALL PRIVILEGES ON ALL TABLES IN SCHEMA company to admin;
+
 SET SCHEMA 'company';
 
 DO $$
@@ -8,6 +14,12 @@ BEGIN
     END IF;
     IF NOT EXISTS (SELECT 1 FROM pg_type WHERE typname = 'priority') THEN
         CREATE TYPE company.priority as ENUM ('low', 'medium', 'high');
+    END IF;
+    IF NOT EXISTS (SELECT 1 FROM pg_type WHERE typname = 'equip_status') THEN
+        CREATE TYPE company.equip_status as ENUM ('accepted', 'progress', 'completed', 'terminated');
+    END IF;
+    IF NOT EXISTS (SELECT 1 FROM pg_type WHERE typname = 'client_type') THEN
+        CREATE TYPE company.client_type as ENUM ('current', 'potential');
     END IF;
 END$$;
 
@@ -23,43 +35,51 @@ CREATE TABLE IF NOT EXISTS company.clients
     passport bigserial primary key UNIQUE NOT NULL,
     phone varchar NOT NULL,
     ogrnip bigserial references company.organization(ogrnip) NOT NULL,
+    "type" client_type NOT NULL,
     "name" varchar,
     email varchar
 );
 
 CREATE TABLE IF NOT EXISTS company.employees (
-    passport bigserial UNIQUE NOT NULL,
+    passport bigserial primary key UNIQUE NOT NULL,
     username varchar NOT NULL,
     "role" employee_role NOT NULL,
     phone varchar NOT NULL,
-    email varchar,
-    PRIMARY KEY (passport, "role")
+    email varchar
 );
 
 CREATE TABLE IF NOT EXISTS company.task (
     task_id bigserial primary key UNIQUE                               NOT NULL,
-    customer_passport bigserial references company.clients(passport)  NOT NULL,
+
+    customer_passport bigserial references company.clients(passport)   NOT NULL,
     author_passport bigserial references company.employees(passport)   NOT NULL,
     executor_passport bigserial references company.employees(passport) NOT NULL,
+
     create_date timestamp without time zone                            NOT NULL,
     deadline_date timestamp without time zone,
     completion_date timestamp without time zone,
+
     priority priority                                                  NOT NULL,
     descriptions text
+);
+
+CREATE TABLE IF NOT EXISTS company.equipment (
+    item_id bigserial primary key UNIQUE NOT NULL,
+
+    "name" varchar NOT NULL,
+    weight real,
+    volume real,
+
+    status equip_status NOT NULL
 );
 
 CREATE TABLE IF NOT EXISTS company.contract (
     contract_id bigserial primary key UNIQUE NOT NULL,
     task_id bigserial references company.task(task_id) NOT NULL,
-    details jsonb
+    equipment_id bigserial references company.equipment(item_id) NOT NULL,
+
+    create_date timestamp without time zone,
+    completion_date timestamp without time zone NOT NULL
 );
-
-CREATE TABLE IF NOT EXISTS company.current_client(
-    passport bigserial references company.clients(passport) NOT NULL
-) INHERITS(company.clients);
-
-CREATE TABLE IF NOT EXISTS company.potential_client (
-    passport bigserial references company.clients(passport) NOT NULL
-) INHERITS(company.clients);
 
 
