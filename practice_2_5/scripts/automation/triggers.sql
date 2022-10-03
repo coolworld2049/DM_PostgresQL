@@ -7,8 +7,8 @@ CREATE OR REPLACE FUNCTION delete_task_after_year() RETURNS trigger AS
 $BODY$
 BEGIN
     DELETE FROM company.task
-           WHERE localtimestamp::timestamp - company.task.create_date::timestamp
-                     >= make_interval(years := 1);
+           WHERE current_timestamp >= task.completion_date + make_interval(years := 1);
+    RETURN NULL;
 END
 $BODY$
 LANGUAGE plpgsql;

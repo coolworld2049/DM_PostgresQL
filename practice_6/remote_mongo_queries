@@ -1,0 +1,5 @@
+db.company.find()
+db.company.find({'employee_id': 1111111111})
+db.company.find({'number_employee_tasks_unfinished': {$gte: 3}})
+db.company.find({'number_employee_tasks_unfinished_that_not_expired': {$lte: 2}})
+db.company.find().sort({ create_date : 1, end_period : -1});

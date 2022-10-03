@@ -1,4 +1,5 @@
 SET ROLE admin;
+
 CREATE SCHEMA IF NOT EXISTS company;
 
 --Админ имеет доступ к специальным функциям, например, может изменить
@@ -80,20 +81,5 @@ CREATE TABLE IF NOT EXISTS company.contract (
 
     create_date timestamp without time zone,
     completion_date timestamp without time zone NOT NULL
-);
-
-CREATE TABLE IF NOT EXISTS company.report(
-    report_id uuid primary key UNIQUE NOT NULL,
-    employee_id bigint references company.employees(passport),
-
-    total_number_employee_tasks_in_period bigint,
-    number_employee_tasks_completed_on_time bigint,
-    number_employee_tasks_not_completed_on_time bigint,
-    number_employee_tasks_unfinished bigint,
-    number_employee_tasks_unfinished_that_not_expired bigint,
-
-    start_period timestamp,
-    end_period timestamp,
-    create_date timestamp
 );
 
