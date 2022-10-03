@@ -126,8 +126,12 @@ $BODY$ LANGUAGE plpgsql;
 
 COPY (SELECT * FROM generate_report_for_all_employees('2022-07-01 04:05:06'::timestamp,
     '2022-11-01 04:05:06'::timestamp))
-    TO '/temp/client_management_company_REPORT.csv' DELIMITER ',' CSV HEADER;
+    TO '/temp/report.csv' DELIMITER ',' CSV HEADER;
 
 COPY (SELECT row_to_json(results) FROM generate_report_for_all_employees('2022-07-01 04:05:06'::timestamp,
-    '2022-11-01 04:05:06'::timestamp) as results) TO '/temp/client_management_company_REPORT.json'
+    '2022-11-01 04:05:06'::timestamp) as results) TO '/temp/report.json'
     WITH (FORMAT text, HEADER FALSE);
+
+COPY (SELECT row_to_json(results) FROM company.clients as results) TO '/temp/clients.json' WITH (FORMAT text, HEADER FALSE);
+COPY (SELECT row_to_json(results) FROM company.employees as results) TO '/temp/employees.json' WITH (FORMAT text, HEADER FALSE);
+COPY (SELECT row_to_json(results) FROM company.task as results) TO '/temp/task.json' WITH (FORMAT text, HEADER FALSE);
