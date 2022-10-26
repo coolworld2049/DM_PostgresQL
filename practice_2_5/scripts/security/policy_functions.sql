@@ -6,7 +6,7 @@ SET SCHEMA 'company';
     CREATE OR REPLACE FUNCTION get_manager_passport_byCurrentUser(passp bigint) RETURNS bigint AS
     $BODY$
     BEGIN
-        RETURN (SELECT passport FROM company.employees WHERE passport = passp and current_user = 'manager');
+        RETURN (SELECT passport FROM company.employees WHERE passport = passp and role = 'manager');
     END
     $BODY$
     LANGUAGE plpgsql;
@@ -15,7 +15,7 @@ SET SCHEMA 'company';
     CREATE OR REPLACE FUNCTION get_ranker_passport_byCurrentUser(passp bigint) RETURNS bigint AS
     $BODY$
     BEGIN
-        RETURN (SELECT passport FROM company.employees WHERE passport = passp and current_user = 'ranker');
+        RETURN (SELECT passport FROM company.employees WHERE passport = passp and role = 'ranker');
     END
     $BODY$
     LANGUAGE plpgsql;

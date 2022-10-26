@@ -83,3 +83,13 @@ CREATE TABLE IF NOT EXISTS company.contract (
     completion_date timestamp without time zone NOT NULL
 );
 
+CREATE TABLE IF NOT EXISTS company.report (
+    report_id uuid primary key UNIQUE NOT NULL,
+    task_id bigserial references company.task(task_id) NOT NULL,
+    equipment_id bigserial references company.equipment(item_id) NOT NULL,
+
+    create_date timestamp without time zone,
+    completion_date timestamp without time zone NOT NULL
+);
+
+

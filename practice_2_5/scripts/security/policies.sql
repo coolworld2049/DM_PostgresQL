@@ -17,6 +17,10 @@ GRANT SELECT, INSERT, UPDATE ON company.contract to manager;
 GRANT USAGE ON SCHEMA company to ranker;
 GRANT SELECT, UPDATE ON TABLE company.task to ranker;
 
+GRANT SELECT ON company.employees to manager;
+GRANT SELECT ON company.employees to ranker;
+
+ALTER TABLE company.task ENABLE ROW LEVEL SECURITY;
 
 --Менеджеры назначают задания себе или кому-либо из рядовых сотрудников
 --Исполнителем задания может быть сотрудник, не являющийся автором: is_not_author(input_task_id)
