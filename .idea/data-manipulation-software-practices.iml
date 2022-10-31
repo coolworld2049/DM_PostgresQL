@@ -5,8 +5,21 @@
       <excludeFolder url="file://$MODULE_DIR$/venv" />
       <excludeFolder url="file://$MODULE_DIR$/practice_6/venv" />
       <excludeFolder url="file://$MODULE_DIR$/practice-6/venv" />
+      <excludeFolder url="file://$MODULE_DIR$/.idea/dataSources" />
+      <excludeFolder url="file://$MODULE_DIR$/.idea/inspectionProfiles" />
+      <excludeFolder url="file://$MODULE_DIR$/practice_6/node_modules" />
+      <excludeFolder url="file://$MODULE_DIR$/volumes/postgres-dms-data/pgdata/pg_logical/mappings" />
+      <excludeFolder url="file://$MODULE_DIR$/volumes/postgres-dms-data/pgdata/pg_logical/snapshots" />
+      <excludeFolder url="file://$MODULE_DIR$/volumes/postgres-dms-data/pgdata/pg_wal/archive_status" />
     </content>
     <orderEntry type="jdk" jdkName="Python 3.10 (data-manipulation-software-practices)" jdkType="Python SDK" />
     <orderEntry type="sourceFolder" forTests="false" />
+  </component>
+  <component name="TemplatesService">
+    <option name="TEMPLATE_FOLDERS">
+      <list>
+        <option value="$MODULE_DIR$/company_crm/src/templates" />
+      </list>
+    </option>
   </component>
 </module>

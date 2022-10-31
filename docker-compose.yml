@@ -1,0 +1,47 @@
+version: "3.9"
+
+services:
+
+  postgres:
+    container_name: postgres-container-dms
+    image: postgres:latest
+    restart: always
+    env_file:
+      - .env
+    environment:
+      - POSTGRES_USER=postgres
+      - POSTGRES_PASSWORD=None
+      - PGDATA=${PG_DATA}
+      - PGPORT=${PG_PORT}
+      - TZ="Europe/Moscow"
+    ports:
+      - ${PG_PORT}:${PG_PORT}
+    volumes:
+      - ./volumes/postgres-dms-data:/var/lib/postgresql/data
+      - ./practice_2_5/scripts/main/init.sql:/docker-entrypoint-initdb.d/init.sql
+      - ./practice_2_5/scripts/main/schema.sql:/docker-entrypoint-initdb.d/schema.sql
+      - ./practice_2_5/scripts/main/insert.sql:/docker-entrypoint-initdb.d/insert.sql
+      - ./practice_2_5/scripts/security/policy_functions.sql:/docker-entrypoint-initdb.d/policy_functions.sql
+      - ./practice_2_5/scripts/security/policies.sql:/docker-entrypoint-initdb.d/policies.sql
+      - ./practice_2_5/scripts/automation/index.sql:/docker-entrypoint-initdb.d/index.sql
+      - ./practice_2_5/scripts/automation/triggers.sql:/docker-entrypoint-initdb.d/triggers.sql
+      - ./practice_2_5/scripts/automation/report.sql:/docker-entrypoint-initdb.d/report.sql
+
+  mongo:
+    container_name: mongo-container-dms
+    image: mongo:latest
+    restart: always
+    env_file:
+      - .env
+    environment:
+      - MONGO_INITDB_ROOT_USERNAME=${MONGO_INITDB_ROOT_USERNAME}
+      - MONGO_INITDB_ROOT_PASSWORD=${MONGO_INITDB_ROOT_PASSWORD}
+      - MONGO_INITDB_DATABASE=${MONGO_INITDB_DATABASE}
+      - TZ="Europe/Moscow"
+    ports:
+      - ${MONGO_PORT}:${MONGO_PORT}
+    volumes:
+      - ./volumes/mongo-dms-data:/data/db
+volumes:
+  postgres-data:
+  mongo-data:

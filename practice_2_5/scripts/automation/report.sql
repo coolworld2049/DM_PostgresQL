@@ -1,4 +1,5 @@
 SET ROLE admin;
+\connect client_management;
 SET SCHEMA 'company';
 
 -- общее количество заданий для данного сотрудника в указанный период

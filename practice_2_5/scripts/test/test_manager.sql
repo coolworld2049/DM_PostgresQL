@@ -1,4 +1,6 @@
-SET ROLE manager;
+\connect client_management;
+SET SCHEMA 'company';
+SET ROLE alex;
 
 --Менеджеры назначают задания себе или кому-либо из рядовых сотрудников
 --Исполнителем задания может быть сотрудник, не являющийся автором
@@ -67,5 +69,6 @@ SET ROLE manager;
     UPDATE company.contract SET completion_date = current_timestamp WHERE task_id = 2;
 
 --Просматривать задание, автором которого является менеджер, может либо автор, либо исполнитель задания
+    SELECT * FROM company.task;
     SELECT * FROM company.task WHERE author_passport = 1111111111;
     SELECT * FROM company.task WHERE executor_passport = 1111111111;
