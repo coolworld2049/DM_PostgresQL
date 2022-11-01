@@ -1,7 +1,8 @@
 --SET ROLE postgres; ALTER ROLE postgres SUPERUSER LOGIN PASSWORD 'postgres' VALID UNTIL 'infinity';
 
 ------------------------------------------------------INIT--------------------------------------------------------------
-CREATE ROLE admin LOGIN PASSWORD 'admin' VALID UNTIL 'infinity';
+CREATE ROLE admin LOGIN PASSWORD 'admin' VALID UNTIL 'infinity' CREATEDB CREATEROLE;
+SET ROLE admin;
 CREATE DATABASE client_management OWNER admin;
 \connect client_management;
 CREATE SCHEMA IF NOT EXISTS company;
@@ -100,13 +101,13 @@ GRANT SELECT, UPDATE, DELETE ON company.task to admin;
 
 --Менеджеры назначают задания себе или кому-либо из рядовых сотрудников
 GRANT USAGE ON SCHEMA company to manager;
-GRANT SELECT, INSERT, UPDATE ON company.task to manager;
+GRANT SELECT, INSERT, UPDATE, DELETE ON company.task to manager;
 GRANT SELECT, INSERT, UPDATE ON company.contract to manager;
 GRANT SELECT(passport, "role", username) ON company.employees to manager;
 
 --Рядовые сотрудники не могут назначать задания
 GRANT USAGE ON SCHEMA company to ranker;
-GRANT SELECT, UPDATE ON TABLE company.task to ranker;
+GRANT SELECT, UPDATE, DELETE ON TABLE company.task to ranker;
 GRANT SELECT(passport, "role", username) ON company.employees to ranker;
 
 
@@ -166,6 +167,15 @@ CREATE POLICY manager_select_task_ranker ON company.task AS PERMISSIVE FOR SELEC
 
 CREATE POLICY ranker_select_tasks ON company.task AS PERMISSIVE FOR SELECT TO ranker USING
     (get_ranker_passport_bycurrentuser(executor_passport) = 1);
+
+
+----По прошествии 12 месяцев после даты завершения задания сведения о нем удаляются из системы.
+CREATE POLICY manager_delete_task ON company.task AS PERMISSIVE FOR DELETE TO manager USING
+    (get_manager_passport_bycurrentuser(executor_passport) = 1
+         or get_manager_passport_bycurrentuser(author_passport) = 1 and completion_date is not null);
+
+CREATE POLICY ranker_delete_tasks ON company.task AS PERMISSIVE FOR DELETE TO ranker USING
+    (get_ranker_passport_bycurrentuser(executor_passport) = 1 and completion_date is not null);
 
 
 ---------------------------------------------------INSERT_RANDOM_DATA---------------------------------------------------

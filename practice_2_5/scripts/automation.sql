@@ -1,35 +1,28 @@
---------------------------------------------------------INDEX-----------------------------------------------------------
-SET ROLE admin;
+SET ROLE admin
 \connect client_management;
 SET SCHEMA 'company';
 
+--------------------------------------------------------INDEX-----------------------------------------------------------
 CREATE INDEX organization_address_index ON company.organization USING btree (address);
 CREATE INDEX organization_org_name_index ON company.organization USING btree (org_name);
 CREATE INDEX client_name_index ON company.clients USING btree (username);
 
 
 --------------------------------------------------------TRIGGER---------------------------------------------------------
-SET ROLE admin;
-\connect client_management;
-SET SCHEMA 'company';
-
-CREATE FUNCTION delete_old_rows() RETURNS trigger LANGUAGE plpgsql AS
+CREATE OR REPLACE FUNCTION delete_old_rows() RETURNS trigger LANGUAGE plpgsql AS
 $BODY$
 BEGIN
-    DELETE FROM company.task WHERE task.completion_date < CURRENT_TIMESTAMP - INTERVAL '1 year';
+    DELETE FROM company.task WHERE completion_date < localtimestamp - '1 year'::interval;
     RETURN NULL;
 END;
 $BODY$;
 
 --По прошествии 12 месяцев после даты завершения задания сведения о нем удаляются из системы.
-CREATE OR REPLACE TRIGGER task_mgmt BEFORE INSERT OR UPDATE OR DELETE ON company.task
-    FOR EACH STATEMENT EXECUTE FUNCTION delete_old_rows();
-
+CREATE OR REPLACE TRIGGER task_mgmt BEFORE INSERT OR UPDATE ON company.task
+    FOR EACH STATEMENT EXECUTE PROCEDURE delete_old_rows();
 
 --------------------------------------------------------REPORT----------------------------------------------------------
-SET ROLE admin;
-\connect client_management;
-SET SCHEMA 'company';
+SET ROLE postgres;
 
 -- общее количество заданий для данного сотрудника в указанный период
 CREATE OR REPLACE FUNCTION total_number_employee_tasks_in_period

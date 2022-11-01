@@ -124,3 +124,6 @@ SELECT * FROM company.task;
 
 --Помечать задание как выполненное и указывать дату завершения может ... исполнитель задания.
 UPDATE company.task SET completion_date = localtimestamp WHERE task_id = 0;
+
+
+SET ROLE admin;
