@@ -19,9 +19,7 @@ services:
     volumes:
       - ./volumes/postgres-dms-data:/var/lib/postgresql/data
       - ./practice_2_5/scripts/main/init.sql:/docker-entrypoint-initdb.d/init.sql
-      - ./practice_2_5/scripts/main/schema.sql:/docker-entrypoint-initdb.d/schema.sql
       - ./practice_2_5/scripts/main/insert.sql:/docker-entrypoint-initdb.d/insert.sql
-      - ./practice_2_5/scripts/security/policy_functions.sql:/docker-entrypoint-initdb.d/policy_functions.sql
       - ./practice_2_5/scripts/security/policies.sql:/docker-entrypoint-initdb.d/policies.sql
       - ./practice_2_5/scripts/automation/index.sql:/docker-entrypoint-initdb.d/index.sql
       - ./practice_2_5/scripts/automation/triggers.sql:/docker-entrypoint-initdb.d/triggers.sql

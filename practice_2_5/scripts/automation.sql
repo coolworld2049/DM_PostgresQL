@@ -1,3 +1,32 @@
+--------------------------------------------------------INDEX-----------------------------------------------------------
+SET ROLE admin;
+\connect client_management;
+SET SCHEMA 'company';
+
+CREATE INDEX organization_address_index ON company.organization USING btree (address);
+CREATE INDEX organization_org_name_index ON company.organization USING btree (org_name);
+CREATE INDEX client_name_index ON company.clients USING btree (username);
+
+
+--------------------------------------------------------TRIGGER---------------------------------------------------------
+SET ROLE admin;
+\connect client_management;
+SET SCHEMA 'company';
+
+CREATE FUNCTION delete_old_rows() RETURNS trigger LANGUAGE plpgsql AS
+$BODY$
+BEGIN
+    DELETE FROM company.task WHERE task.completion_date < CURRENT_TIMESTAMP - INTERVAL '1 year';
+    RETURN NULL;
+END;
+$BODY$;
+
+--По прошествии 12 месяцев после даты завершения задания сведения о нем удаляются из системы.
+CREATE OR REPLACE TRIGGER task_mgmt BEFORE INSERT OR UPDATE OR DELETE ON company.task
+    FOR EACH STATEMENT EXECUTE FUNCTION delete_old_rows();
+
+
+--------------------------------------------------------REPORT----------------------------------------------------------
 SET ROLE admin;
 \connect client_management;
 SET SCHEMA 'company';
@@ -5,20 +34,19 @@ SET SCHEMA 'company';
 -- общее количество заданий для данного сотрудника в указанный период
 CREATE OR REPLACE FUNCTION total_number_employee_tasks_in_period
     (start_timestamp timestamp , end_timestamp timestamp , employee_passport bigint)
-    RETURNS bigint AS
+    RETURNS bigint LANGUAGE plpgsql AS
 $BODY$
 BEGIN
     RETURN (SELECT count(*) FROM company.task WHERE executor_passport = employee_passport
                                                      or author_passport = employee_passport
                                                   and create_date BETWEEN start_timestamp and end_timestamp);
 END;
-$BODY$
-LANGUAGE plpgsql;
+$BODY$;
 
 -- сколько заданий завершено вовремя
 CREATE OR REPLACE FUNCTION number_employee_tasks_completed_on_time
     (start_timestamp timestamp , end_timestamp timestamp , employee_passport bigint)
-    RETURNS bigint AS
+    RETURNS bigint LANGUAGE plpgsql AS
 $BODY$
 BEGIN
     RETURN (SELECT count(*) FROM company.task WHERE executor_passport = employee_passport
@@ -26,13 +54,12 @@ BEGIN
                                                             and deadline_date::timestamp >= completion_date::timestamp
                                                             and create_date BETWEEN start_timestamp and end_timestamp);
 END;
-$BODY$
-LANGUAGE plpgsql;
+$BODY$;
 
 -- сколько заданий завершено с нарушением срока исполнения
 CREATE OR REPLACE FUNCTION number_employee_tasks_not_completed_on_time
     (start_timestamp timestamp , end_timestamp timestamp , employee_passport bigint)
-    RETURNS bigint AS
+    RETURNS bigint LANGUAGE plpgsql AS
 $BODY$
 BEGIN
     RETURN (SELECT count(*) FROM company.task WHERE executor_passport = employee_passport
@@ -40,13 +67,12 @@ BEGIN
                                                             and deadline_date::timestamp < completion_date::timestamp
                                                             and create_date BETWEEN start_timestamp and end_timestamp);
 END;
-$BODY$
-LANGUAGE plpgsql;
+$BODY$;
 
 -- сколько заданий с истекшим сроком исполнения не завершено
 CREATE OR REPLACE FUNCTION number_employee_tasks_unfinished
     (start_timestamp timestamp , end_timestamp timestamp , employee_passport bigint)
-    RETURNS bigint AS
+    RETURNS bigint LANGUAGE plpgsql AS
 $BODY$
 BEGIN
     RETURN (SELECT count(*) FROM company.task WHERE executor_passport = employee_passport
@@ -55,14 +81,13 @@ BEGIN
                                                             and completion_date is null
                                                             and create_date BETWEEN start_timestamp and end_timestamp);
 END;
-$BODY$
-LANGUAGE plpgsql;
+$BODY$;
 
 
 -- сколько не завершенных заданий, срок исполнения которых не истек
 CREATE OR REPLACE FUNCTION number_employee_tasks_unfinished_that_not_expired
     (start_timestamp timestamp , end_timestamp timestamp , employee_passport bigint)
-    RETURNS bigint AS
+    RETURNS bigint LANGUAGE plpgsql AS
 $BODY$
 BEGIN
     RETURN (SELECT count(*) FROM company.task WHERE executor_passport = employee_passport
@@ -71,13 +96,13 @@ BEGIN
                                                             and completion_date is null
                                                             and create_date BETWEEN start_timestamp and end_timestamp);
 END;
-$BODY$
-LANGUAGE plpgsql;
+$BODY$;
 
 -- Система генерирует отчет по исполнению заданий каким-либо сотрудником
 -- в течение периода времени, указываемого в параметре отчета.
-CREATE OR REPLACE FUNCTION generate_report_by_period(start_timestamp timestamp , end_timestamp timestamp, employee_passport bigint)
-    RETURNS RECORD AS $BODY$
+CREATE OR REPLACE FUNCTION generate_report_by_period_and_employee(start_timestamp timestamp , end_timestamp timestamp, employee_passport bigint)
+    RETURNS RECORD LANGUAGE plpgsql AS
+$BODY$
 DECLARE
     report RECORD;
 BEGIN
@@ -93,8 +118,7 @@ BEGIN
             localtimestamp INTO report;
     RETURN report;
 END;
-$BODY$ LANGUAGE plpgsql;
-
+$BODY$;
 
 CREATE OR REPLACE FUNCTION generate_report_for_all_employees(start_timestamp timestamp , end_timestamp timestamp)
     RETURNS TABLE (employee_id bigint,
@@ -104,7 +128,7 @@ CREATE OR REPLACE FUNCTION generate_report_for_all_employees(start_timestamp tim
                     number_employee_tasks_unfinished bigint,
                     number_employee_tasks_unfinished_that_not_expired bigint,
                     period json,
-                    create_date timestamp) AS $BODY$
+                    create_date timestamp) LANGUAGE plpgsql AS $BODY$
     DECLARE ctm timestamp = current_timestamp;
     DECLARE filter_by json = json_build_object(
         'start_timestamp',start_timestamp,
@@ -120,9 +144,8 @@ BEGIN
                 number_employee_tasks_unfinished_that_not_expired(start_timestamp, end_timestamp, passport),
                 filter_by,
                 ctm FROM company.employees;
-END
-$BODY$ LANGUAGE plpgsql;
-
+END;
+$BODY$;
 
 
 COPY (SELECT * FROM generate_report_for_all_employees('2022-07-01 04:05:06'::timestamp,

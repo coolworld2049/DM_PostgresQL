@@ -36,7 +36,6 @@ async def upload_db_report(_client: MongoClient):
             await db.create_collection(cl.name)
         await insert_one(path, cl)
 
-
 if __name__ == '__main__':
     client: MongoClient = AsyncIOMotorClient(MONGO_URI)
     loop = client.get_io_loop()
